@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import { TABLES, BUCKETS } from '@/config/db';
-import type { Event, EventMaterial, DevoteeSubmission, AdminProfile } from '@/types';
+import type { Event, EventMaterial, DevoteeSubmission, AdminProfile, EventUpsert } from '@/types';
 
 export const db = {
   events: {
@@ -39,6 +39,32 @@ export const db = {
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as Event[];
+    },
+    create: async (event: EventUpsert) => {
+      const { data, error } = await supabase
+        .from(TABLES.EVENTS)
+        .insert(event)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Event;
+    },
+    update: async (eventId: string, patch: Partial<EventUpsert>) => {
+      const { data, error } = await supabase
+        .from(TABLES.EVENTS)
+        .update(patch)
+        .eq('event_id', eventId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Event;
+    },
+    remove: async (eventId: string) => {
+      const { error } = await supabase
+        .from(TABLES.EVENTS)
+        .delete()
+        .eq('event_id', eventId);
+      if (error) throw error;
     },
   },
 

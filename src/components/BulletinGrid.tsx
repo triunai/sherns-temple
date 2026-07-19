@@ -20,10 +20,22 @@ export default function BulletinGrid() {
 
   if (loading) {
     return (
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <p className="text-center text-temple-goldLight/40 animate-shimmer">
-          {t('carousel_loading')}
-        </p>
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="bg-temple-card border border-temple-gold/10 rounded-lg overflow-hidden animate-shimmer"
+            >
+              <div className="w-full h-40 bg-temple-gold/10" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 w-3/4 rounded bg-temple-gold/10" />
+                <div className="h-3 w-1/2 rounded bg-temple-gold/10" />
+                <div className="h-11 w-full rounded-lg bg-temple-gold/10" />
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
     );
   }

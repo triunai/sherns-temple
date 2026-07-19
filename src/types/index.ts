@@ -87,7 +87,26 @@ export interface AdminProfile {
   created_at: string;
 }
 
-export type AdminTab = 'submissions' | 'management' | 'settings';
+export type AdminTab = 'submissions' | 'events' | 'management' | 'settings';
+
+export interface EventUpsert {
+  event_name: string;
+  featured_poster: string | null;
+  show_in_carousel: boolean;
+  cost_per_pax: number;
+  abhishegam_time: string | null;
+  special_notes: string | null;
+  status: 'Draft' | 'Active' | 'Archived';
+}
+
+export interface SubmissionStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  collected: number;
+  awaiting: number;
+}
 
 export interface ApprovalStateConfig {
   next: ApprovalStatus[];

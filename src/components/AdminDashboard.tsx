@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { useLanguage } from '@/lib/languageContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,7 +9,9 @@ import AdminLoginView from './AdminLoginView';
 import SubmissionsTable from './SubmissionsTable';
 import AdminManagementTable from './AdminManagementTable';
 import AccountSettings from './AccountSettings';
-import type { AdminTab } from '@/types';
+import EventsAdmin from './EventsAdmin';
+import StatsCards from './admin/StatsCards';
+import type { AdminTab, SubmissionStats } from '@/types';
 
 interface AdminDashboardProps {
   onBackToPublic: () => void;
@@ -25,10 +27,29 @@ export default function AdminDashboard({ onBackToPublic }: AdminDashboardProps) 
     isApproved,
     logout,
   } = useAuth();
-  const { submissions, loading: subsLoading, updateApproval } = useSubmissions();
+  const { submissions, loading: subsLoading, updateApproval, refetch } = useSubmissions();
   const { events } = useEvents();
   const [adminTab, setAdminTab] = useState<AdminTab>('submissions');
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const stats: SubmissionStats = useMemo(() => {
+    return submissions.reduce<SubmissionStats>(
+      (acc, submission) => {
+        acc.total += 1;
+        if (submission.admin_approval === 'Pending') {
+          acc.pending += 1;
+          acc.awaiting += submission.total_amount_paid;
+        } else if (submission.admin_approval === 'Approved') {
+          acc.approved += 1;
+          acc.collected += submission.total_amount_paid;
+        } else if (submission.admin_approval === 'Rejected') {
+          acc.rejected += 1;
+        }
+        return acc;
+      },
+      { total: 0, pending: 0, approved: 0, rejected: 0, collected: 0, awaiting: 0 }
+    );
+  }, [submissions]);
 
   if (!isEnabled('ENABLE_ADMIN_VIEW')) {
     return (
@@ -91,6 +112,7 @@ export default function AdminDashboard({ onBackToPublic }: AdminDashboardProps) 
   // Approved admin dashboard
   const tabs: { key: AdminTab; label: string }[] = [
     { key: 'submissions', label: t('admin_submissions_title') },
+    { key: 'events', label: t('admin_events_title') },
     { key: 'management', label: t('admin_management_title') },
     { key: 'settings', label: t('settings_title') },
   ];
@@ -106,23 +128,35 @@ export default function AdminDashboard({ onBackToPublic }: AdminDashboardProps) 
       <Toaster position="top-right" />
       <section className="max-w-7xl mx-auto px-4 py-8">
       {/* Header bar */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h2 className="text-lg font-bold text-temple-goldLight">
-          {t('admin_dashboard')}
-        </h2>
-        <div className="flex items-center gap-3 text-xs">
-          <span className="text-temple-goldLight/50">
+      <div className="mb-6 space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <h2 className="text-lg font-bold text-temple-goldLight">
+            {t('admin_dashboard')}
+          </h2>
+          <span className="text-[11px] text-temple-goldLight/50 truncate max-w-[55%]">
             {user?.email}
           </span>
+        </div>
+        <div className="flex items-center gap-2 text-xs flex-wrap">
+          <button
+            onClick={() => refetch()}
+            disabled={subsLoading}
+            className="min-h-[44px] flex items-center gap-1.5 text-temple-goldLight/50 hover:text-temple-goldLight border border-temple-gold/30 rounded px-3 py-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className={subsLoading ? 'inline-block animate-spin' : 'inline-block'}>
+              ↻
+            </span>
+            {t('admin_refresh')}
+          </button>
           <button
             onClick={onBackToPublic}
-            className="text-temple-goldLight/50 hover:text-temple-goldLight border border-temple-gold/30 rounded px-3 py-1 transition-colors"
+            className="min-h-[44px] text-temple-goldLight/50 hover:text-temple-goldLight border border-temple-gold/30 rounded px-3 py-1 transition-colors"
           >
             {t('back_to_public')}
           </button>
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="text-red-400/60 hover:text-red-400 border border-red-800/40 rounded px-3 py-1 transition-colors"
+            className="min-h-[44px] text-red-400/60 hover:text-red-400 border border-red-800/40 rounded px-3 py-1 transition-colors"
           >
             {t('admin_logout')}
           </button>
@@ -154,13 +188,16 @@ export default function AdminDashboard({ onBackToPublic }: AdminDashboardProps) 
         </div>
       )}
 
+      {/* Stats row */}
+      {!subsLoading && <StatsCards stats={stats} />}
+
       {/* Tab navigation */}
       <div className="flex gap-1 mb-6 border-b border-temple-gold/20 pb-2 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setAdminTab(tab.key)}
-            className={`px-4 py-2 text-xs font-medium rounded-t transition-colors whitespace-nowrap ${
+            className={`min-h-[40px] px-4 py-2 text-xs font-medium rounded-t transition-colors whitespace-nowrap ${
               adminTab === tab.key
                 ? 'bg-temple-gold/10 text-temple-gold border-b-2 border-temple-gold'
                 : 'text-temple-goldLight/50 hover:text-temple-goldLight/80'
@@ -180,6 +217,8 @@ export default function AdminDashboard({ onBackToPublic }: AdminDashboardProps) 
           onUpdateApproval={updateApproval}
         />
       )}
+
+      {adminTab === 'events' && <EventsAdmin />}
 
       {adminTab === 'management' && profile && (
         <AdminManagementTable
