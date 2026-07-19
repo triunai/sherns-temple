@@ -11,6 +11,8 @@ import AdminManagementTable from './AdminManagementTable';
 import AccountSettings from './AccountSettings';
 import EventsAdmin from './EventsAdmin';
 import StatsCards from './admin/StatsCards';
+import EventFinancialRollup from './admin/EventFinancialRollup';
+import { HourglassIcon, RefreshIcon } from './ui/Icons';
 import type { AdminTab, SubmissionStats } from '@/types';
 
 interface AdminDashboardProps {
@@ -87,7 +89,7 @@ export default function AdminDashboard({ onBackToPublic }: AdminDashboardProps) 
         <Toaster position="top-right" />
         <section className="max-w-md mx-auto px-4 py-16">
           <div className="bg-temple-card border border-temple-gold/30 rounded-lg p-8 text-center space-y-4">
-            <span className="text-4xl block">⏳</span>
+            <HourglassIcon className="w-10 h-10 mx-auto text-temple-gold/70" />
             <h2 className="text-lg font-bold text-temple-goldLight">
               {t('admin_pending_approval_title')}
             </h2>
@@ -190,6 +192,9 @@ export default function AdminDashboard({ onBackToPublic }: AdminDashboardProps) 
 
       {/* Stats row */}
       {!subsLoading && <StatsCards stats={stats} />}
+
+      {/* Per-event financial + registration rollup (Feature #4) */}
+      {!subsLoading && <EventFinancialRollup submissions={submissions} events={events} />}
 
       {/* Tab navigation */}
       <div className="flex gap-1 mb-6 border-b border-temple-gold/20 pb-2 overflow-x-auto">

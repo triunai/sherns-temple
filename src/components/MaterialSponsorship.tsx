@@ -1,4 +1,5 @@
 import { useLanguage } from '@/lib/languageContext';
+import MaterialProgress from './MaterialProgress';
 import type { EventMaterial, SponsoredItem } from '@/types';
 
 interface MaterialSponsorshipProps {
@@ -49,10 +50,10 @@ export default function MaterialSponsorship({ materials, sponsored, onChange }: 
       </h4>
 
       {materials.map((mat) => {
-        const isFilled = mat.funding_status === 'Filled';
+        const isFilled =
+          mat.funding_status === 'Filled' || mat.qty_received >= mat.target_quantity;
         const sponsoredQty = getSponsoredQty(mat.item_id);
         const remaining = mat.target_quantity - mat.qty_received;
-        const progressPercent = Math.min(100, (mat.qty_received / mat.target_quantity) * 100);
 
         return (
           <div
@@ -63,31 +64,8 @@ export default function MaterialSponsorship({ materials, sponsored, onChange }: 
                 : 'border-temple-gold/20 bg-temple-bg/50'
             }`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <span className="text-sm text-white font-medium">
-                  {mat.material_name}
-                </span>
-                <span className="text-xs text-temple-goldLight/50 ml-2">
-                  ({mat.target_quantity} {mat.unit_type})
-                </span>
-              </div>
-              {isFilled ? (
-                <span className="text-xs font-bold text-green-400 bg-green-950/60 px-2 py-0.5 rounded">
-                  {t('step2_sponsor_filled')}
-                </span>
-              ) : (
-                <span className="text-xs text-temple-goldLight/60">
-                  {remaining} {t('step2_sponsor_remaining')}
-                </span>
-              )}
-            </div>
-
-            <div className="h-2 bg-temple-bg rounded-full overflow-hidden mb-2">
-              <div
-                className="h-full bg-gradient-to-r from-temple-crimson to-temple-gold transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
+            <div className="mb-2">
+              <MaterialProgress material={mat} />
             </div>
 
             {!isFilled && (

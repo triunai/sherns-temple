@@ -1,6 +1,13 @@
 import { supabase } from './supabaseClient';
 import { TABLES, BUCKETS } from '@/config/db';
-import type { Event, EventMaterial, DevoteeSubmission, AdminProfile, EventUpsert } from '@/types';
+import type {
+  Event,
+  EventMaterial,
+  DevoteeSubmission,
+  AdminProfile,
+  EventUpsert,
+  SubmissionStatusResult,
+} from '@/types';
 
 export const db = {
   events: {
@@ -81,7 +88,12 @@ export const db = {
   },
 
   submissions: {
-    create: async (submission: Omit<DevoteeSubmission, 'receipt_id' | 'created_at'>) => {
+    create: async (
+      submission: Omit<
+        DevoteeSubmission,
+        'receipt_id' | 'created_at' | 'approved_by' | 'approved_by_email' | 'approved_at'
+      >
+    ) => {
       const { data, error } = await supabase
         .from(TABLES.DEVOTEE_SUBMISSIONS)
         .insert(submission)
@@ -99,6 +111,8 @@ export const db = {
       return data as DevoteeSubmission[];
     },
     updateApproval: async (receiptId: string, status: 'Pending' | 'Approved' | 'Rejected') => {
+      // approved_by / approved_at / approved_by_email are stamped server-side by
+      // the trg_set_approval_audit trigger (Feature #5) — never sent from the client.
       const { data, error } = await supabase
         .from(TABLES.DEVOTEE_SUBMISSIONS)
         .update({ admin_approval: status })
@@ -107,6 +121,20 @@ export const db = {
         .single();
       if (error) throw error;
       return data as DevoteeSubmission;
+    },
+    // Feature #1 — public status lookup via SECURITY DEFINER RPC.
+    // Returns only { receipt_id, event_name, status, submitted_at }.
+    getStatus: async (params: {
+      receiptId?: string;
+      whatsapp?: string;
+    }): Promise<SubmissionStatusResult[]> => {
+      // Omit (undefined) rather than null so the SQL defaults (null) apply.
+      const { data, error } = await supabase.rpc('get_submission_status', {
+        p_receipt_id: params.receiptId,
+        p_whatsapp: params.whatsapp,
+      });
+      if (error) throw error;
+      return (data ?? []) as SubmissionStatusResult[];
     },
   },
 

@@ -38,7 +38,31 @@ export interface DevoteeSubmission {
   total_amount_paid: number;
   payment_proof: string;
   admin_approval: 'Pending' | 'Approved' | 'Rejected';
+  approved_by: string | null;
+  approved_by_email: string | null;
+  approved_at: string | null;
   created_at: string;
+}
+
+// Feature #1 — result row from the public get_submission_status RPC.
+// Deliberately exposes only status + event name (no PII).
+export interface SubmissionStatusResult {
+  receipt_id: string;
+  event_name: string;
+  status: ApprovalStatus;
+  submitted_at: string;
+}
+
+// Feature #4 — per-event financial + registration rollup (computed client-side).
+export interface EventFinancialSummary {
+  event_id: string;
+  event_name: string;
+  registrations: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  collected: number; // sum of approved total_amount_paid
+  awaiting: number; // sum of pending total_amount_paid
 }
 
 export type FamilyMember = {

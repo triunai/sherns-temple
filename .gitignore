@@ -32,3 +32,6 @@ Thumbs.db
 
 # ── Dotenv in the Supabase CLI ───────────────────────
 supabase/.temp
+
+# Playwright MCP test artifacts
+.playwright-mcp/

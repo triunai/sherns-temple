@@ -3,6 +3,8 @@ import { useLanguage } from '@/lib/languageContext';
 import { APPROVAL_STATES } from '@/config/admin';
 import { buildWhatsAppMessage } from '@/config/whatsapp';
 import { exportSubmissionsCsv } from '@/lib/csvExport';
+import ReceiptThumbnail from './ReceiptThumbnail';
+import { ApprovalStatusIcon, TempleIcon } from './ui/Icons';
 import type { ApprovalStatus, DevoteeSubmission, Event } from '@/types';
 
 interface SubmissionsTableProps {
@@ -75,7 +77,8 @@ function SubmissionCard({ submission, event, onUpdateApproval }: SubmissionCardP
             statusCfg.color ?? 'bg-gray-700 text-white'
           }`}
         >
-          {statusCfg.icon} {t(`approval_${submission.admin_approval.toLowerCase()}`)}
+          <ApprovalStatusIcon status={submission.admin_approval} className="w-3 h-3" />
+          {t(`approval_${submission.admin_approval.toLowerCase()}`)}
         </span>
       </div>
 
@@ -97,6 +100,19 @@ function SubmissionCard({ submission, event, onUpdateApproval }: SubmissionCardP
       <p className="text-[10px] text-temple-goldLight/30">
         {t('admin_ref')} {submission.receipt_id.slice(0, 8)}
       </p>
+
+      {/* Approval audit trail (Feature #5) — server-stamped who/when */}
+      {submission.approved_at && (
+        <p className="text-[10px] text-temple-goldLight/40 flex items-center gap-1">
+          <ApprovalStatusIcon
+            status={submission.admin_approval}
+            className="w-3 h-3 text-temple-gold/60"
+          />
+          {t('audit_actioned_by')}: {submission.approved_by_email ?? t('admin_none_provided')}
+          {' · '}
+          {formatSubmittedAt(submission.approved_at)}
+        </p>
+      )}
 
       {/* Details toggle */}
       <button
@@ -144,14 +160,13 @@ function SubmissionCard({ submission, event, onUpdateApproval }: SubmissionCardP
           )}
 
           {submission.payment_proof && (
-            <a
-              href={submission.payment_proof}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block text-temple-gold hover:underline"
-            >
-              View receipt
-            </a>
+            <div>
+              <p className="text-temple-goldLight/50 mb-1">{t('receipt_view')}:</p>
+              <ReceiptThumbnail
+                url={submission.payment_proof}
+                label={submission.devotee_name}
+              />
+            </div>
           )}
         </div>
       )}
@@ -236,7 +251,7 @@ export default function SubmissionsTable({
   if (submissions.length === 0) {
     return (
       <div className="text-center py-12 space-y-2">
-        <span className="text-4xl block">🛕</span>
+        <TempleIcon className="w-10 h-10 mx-auto text-temple-gold/70" />
         <p className="text-temple-goldLight/60 font-medium">{t('admin_no_submissions')}</p>
         <p className="text-temple-goldLight/30 text-xs">{t('admin_no_submissions_hint')}</p>
       </div>

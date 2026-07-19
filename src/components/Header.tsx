@@ -1,4 +1,5 @@
 import { useLanguage } from '@/lib/languageContext';
+import { TempleIcon } from './ui/Icons';
 import type { Language } from '@/types';
 
 interface HeaderProps {
@@ -29,9 +30,7 @@ export default function Header({ onAdminClick, isAdmin, userEmail }: HeaderProps
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
         {/* Icon + title (short title on mobile, full on sm+) */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-          <span className="text-temple-gold text-xl sm:text-2xl shrink-0" aria-hidden="true">
-            🛕
-          </span>
+          <TempleIcon className="w-6 h-6 sm:w-7 sm:h-7 text-temple-gold shrink-0" />
           <h1 className="text-sm sm:text-base font-semibold text-temple-goldLight tracking-wide truncate min-w-0">
             <span className="sm:hidden">{SHORT_TITLES[language] ?? 'Temple Bulletin'}</span>
             <span className="hidden sm:inline">{t('app_title')}</span>

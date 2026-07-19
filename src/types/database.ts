@@ -39,6 +39,9 @@ export type Database = {
       devotee_submissions: {
         Row: {
           admin_approval: string
+          approved_at: string | null
+          approved_by: string | null
+          approved_by_email: string | null
           created_at: string
           devotee_email: string
           devotee_name: string
@@ -54,6 +57,9 @@ export type Database = {
         }
         Insert: {
           admin_approval?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_by_email?: string | null
           created_at?: string
           devotee_email: string
           devotee_name: string
@@ -69,6 +75,9 @@ export type Database = {
         }
         Update: {
           admin_approval?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_by_email?: string | null
           created_at?: string
           devotee_email?: string
           devotee_name?: string
@@ -186,7 +195,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_submission_status: {
+        Args: { p_receipt_id?: string; p_whatsapp?: string }
+        Returns: {
+          event_name: string
+          receipt_id: string
+          status: string
+          submitted_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
