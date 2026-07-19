@@ -157,6 +157,49 @@ const EN: TranslationDict = {
   footer_contact: 'Contact Priest: Gurukal Kumarah',
   footer_rights: 'All rights reserved.',
   back_to_public: 'Back to Public View',
+  // Feature #1 — devotee status lookup
+  status_lookup_title: 'Check Registration Status',
+  status_lookup_subtitle: 'Enter your reference ID or WhatsApp number to see if your pooja is confirmed.',
+  status_lookup_open: 'Check My Status',
+  status_lookup_ref_label: 'Reference ID',
+  status_lookup_ref_placeholder: 'Paste your reference ID',
+  status_lookup_wa_label: 'WhatsApp Number',
+  status_lookup_wa_placeholder: 'e.g. 0123456789',
+  status_lookup_or: 'or',
+  status_lookup_submit: 'Check Status',
+  status_lookup_checking: 'Checking…',
+  status_lookup_none: 'No registration found. Please check your reference ID or WhatsApp number.',
+  status_lookup_empty_input: 'Enter a reference ID or WhatsApp number.',
+  status_lookup_error: 'Something went wrong. Please try again.',
+  status_lookup_result_title: 'Your Registration',
+  status_lookup_event: 'Event',
+  status_lookup_submitted: 'Submitted',
+  status_lookup_close: 'Close',
+  // Feature #2 — material sponsorship progress
+  material_needed_title: 'Materials Needed',
+  material_sponsored_suffix: 'sponsored',
+  material_filled: 'Filled',
+  material_more: 'more',
+  // Feature #3 — receipt thumbnail + lightbox
+  receipt_view: 'Receipt',
+  receipt_tap_enlarge: 'Tap to enlarge',
+  receipt_unavailable: 'Receipt unavailable',
+  receipt_open_new: 'Open in new tab',
+  receipt_close: 'Close',
+  // Feature #4 — per-event financial rollup
+  rollup_title: 'Per-Event Breakdown',
+  rollup_show: 'Show breakdown',
+  rollup_hide: 'Hide breakdown',
+  rollup_registrations: 'Registrations',
+  rollup_collected: 'Collected',
+  rollup_awaiting: 'Awaiting',
+  rollup_empty: 'No event data yet.',
+  // Feature #5 — approval audit trail
+  audit_actioned_by: 'Actioned by',
+  // Feature #6 — PWA install
+  pwa_install: 'Install App',
+  pwa_install_hint: 'Add this bulletin to your home screen',
+  pwa_install_dismiss: 'Not now',
 };
 
 const TA: TranslationDict = {
@@ -313,6 +356,49 @@ const TA: TranslationDict = {
   footer_contact: 'பூசாரியை தொடர்பு கொள்ள: குருக்கள் குமாரா',
   footer_rights: 'அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.',
   back_to_public: 'பொது பார்வைக்கு திரும்பு',
+  // Feature #1 — devotee status lookup
+  status_lookup_title: 'பதிவு நிலையைச் சரிபார்க்கவும்',
+  status_lookup_subtitle: 'உங்கள் பூஜை உறுதிசெய்யப்பட்டதா என அறிய உங்கள் குறிப்பு ஐடி அல்லது வாட்ஸ்அப் எண்ணை உள்ளிடவும்.',
+  status_lookup_open: 'எனது நிலையைச் சரிபார்',
+  status_lookup_ref_label: 'குறிப்பு ஐடி',
+  status_lookup_ref_placeholder: 'உங்கள் குறிப்பு ஐடியை ஒட்டவும்',
+  status_lookup_wa_label: 'வாட்ஸ்அப் எண்',
+  status_lookup_wa_placeholder: 'எ.கா. 0123456789',
+  status_lookup_or: 'அல்லது',
+  status_lookup_submit: 'நிலையைச் சரிபார்',
+  status_lookup_checking: 'சரிபார்க்கிறது…',
+  status_lookup_none: 'பதிவு எதுவும் கிடைக்கவில்லை. உங்கள் குறிப்பு ஐடி அல்லது வாட்ஸ்அப் எண்ணைச் சரிபார்க்கவும்.',
+  status_lookup_empty_input: 'குறிப்பு ஐடி அல்லது வாட்ஸ்அப் எண்ணை உள்ளிடவும்.',
+  status_lookup_error: 'ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.',
+  status_lookup_result_title: 'உங்கள் பதிவு',
+  status_lookup_event: 'நிகழ்வு',
+  status_lookup_submitted: 'சமர்ப்பிக்கப்பட்டது',
+  status_lookup_close: 'மூடு',
+  // Feature #2 — material sponsorship progress
+  material_needed_title: 'தேவையான பொருட்கள்',
+  material_sponsored_suffix: 'நன்கொடை அளிக்கப்பட்டது',
+  material_filled: 'நிரம்பியது',
+  material_more: 'மேலும்',
+  // Feature #3 — receipt thumbnail + lightbox
+  receipt_view: 'ரசீது',
+  receipt_tap_enlarge: 'பெரிதாக்க தட்டவும்',
+  receipt_unavailable: 'ரசீது கிடைக்கவில்லை',
+  receipt_open_new: 'புதிய தாவலில் திற',
+  receipt_close: 'மூடு',
+  // Feature #4 — per-event financial rollup
+  rollup_title: 'நிகழ்வு வாரியான விவரம்',
+  rollup_show: 'விவரத்தைக் காட்டு',
+  rollup_hide: 'விவரத்தை மறை',
+  rollup_registrations: 'பதிவுகள்',
+  rollup_collected: 'வசூலிக்கப்பட்டது',
+  rollup_awaiting: 'எதிர்பார்ப்பு',
+  rollup_empty: 'இன்னும் நிகழ்வு தரவு இல்லை.',
+  // Feature #5 — approval audit trail
+  audit_actioned_by: 'செயல்படுத்தியவர்',
+  // Feature #6 — PWA install
+  pwa_install: 'செயலியை நிறுவு',
+  pwa_install_hint: 'இந்த அறிக்கையை முகப்புத் திரையில் சேர்க்கவும்',
+  pwa_install_dismiss: 'இப்போது வேண்டாம்',
 };
 
 const BM: TranslationDict = {
@@ -469,6 +555,49 @@ const BM: TranslationDict = {
   footer_contact: 'Hubungi Paderi: Gurukal Kumarah',
   footer_rights: 'Hak cipta terpelihara.',
   back_to_public: 'Kembali ke Paparan Awam',
+  // Feature #1 — devotee status lookup
+  status_lookup_title: 'Semak Status Pendaftaran',
+  status_lookup_subtitle: 'Masukkan ID rujukan atau nombor WhatsApp anda untuk melihat sama ada pooja anda disahkan.',
+  status_lookup_open: 'Semak Status Saya',
+  status_lookup_ref_label: 'ID Rujukan',
+  status_lookup_ref_placeholder: 'Tampal ID rujukan anda',
+  status_lookup_wa_label: 'Nombor WhatsApp',
+  status_lookup_wa_placeholder: 'cth. 0123456789',
+  status_lookup_or: 'atau',
+  status_lookup_submit: 'Semak Status',
+  status_lookup_checking: 'Menyemak…',
+  status_lookup_none: 'Tiada pendaftaran ditemui. Sila semak ID rujukan atau nombor WhatsApp anda.',
+  status_lookup_empty_input: 'Masukkan ID rujukan atau nombor WhatsApp.',
+  status_lookup_error: 'Sesuatu tidak kena. Sila cuba lagi.',
+  status_lookup_result_title: 'Pendaftaran Anda',
+  status_lookup_event: 'Acara',
+  status_lookup_submitted: 'Dihantar',
+  status_lookup_close: 'Tutup',
+  // Feature #2 — material sponsorship progress
+  material_needed_title: 'Bahan Diperlukan',
+  material_sponsored_suffix: 'ditaja',
+  material_filled: 'Penuh',
+  material_more: 'lagi',
+  // Feature #3 — receipt thumbnail + lightbox
+  receipt_view: 'Resit',
+  receipt_tap_enlarge: 'Ketik untuk besarkan',
+  receipt_unavailable: 'Resit tidak tersedia',
+  receipt_open_new: 'Buka dalam tab baharu',
+  receipt_close: 'Tutup',
+  // Feature #4 — per-event financial rollup
+  rollup_title: 'Pecahan Setiap Acara',
+  rollup_show: 'Tunjuk pecahan',
+  rollup_hide: 'Sembunyi pecahan',
+  rollup_registrations: 'Pendaftaran',
+  rollup_collected: 'Dikutip',
+  rollup_awaiting: 'Menanti',
+  rollup_empty: 'Tiada data acara lagi.',
+  // Feature #5 — approval audit trail
+  audit_actioned_by: 'Ditindak oleh',
+  // Feature #6 — PWA install
+  pwa_install: 'Pasang Apl',
+  pwa_install_hint: 'Tambah buletin ini ke skrin utama',
+  pwa_install_dismiss: 'Bukan sekarang',
 };
 
 const DICTIONARIES: Record<Language, TranslationDict> = { EN, TA, BM };

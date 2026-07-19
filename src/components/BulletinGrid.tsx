@@ -1,7 +1,10 @@
 import { useState, useCallback } from 'react';
 import { useLanguage } from '@/lib/languageContext';
 import { useEvents } from '@/hooks/useEvents';
+import { useEventMaterials } from '@/hooks/useEventMaterials';
 import ContributeTab from './ContributeTab';
+import MaterialProgress from './MaterialProgress';
+import { TempleIcon, ClockIcon } from './ui/Icons';
 import type { Event } from '@/types';
 import { isEnabled } from '@/config/features';
 
@@ -44,7 +47,7 @@ export default function BulletinGrid() {
     return (
       <section className="max-w-7xl mx-auto px-4 py-12 text-center">
         <div className="bg-temple-card/30 border border-temple-gold/20 rounded-lg p-8 inline-block">
-          <span className="text-4xl block mb-3">🛕</span>
+          <TempleIcon className="w-12 h-12 mx-auto mb-3 text-temple-gold/70" />
           <p className="text-temple-goldLight/60">{t('event_no_events')}</p>
         </div>
       </section>
@@ -82,11 +85,12 @@ function EventCard({
   onToggle: () => void;
 }) {
   const { t } = useLanguage();
+  const { materials } = useEventMaterials(event.event_id);
 
   return (
     <div
       className={`bg-temple-card border rounded-lg overflow-hidden transition-all duration-300 ${
-        isExpanded ? 'border-temple-gold shadow-[inset_0_0_20px_rgba(229,169,59,0.08)]' : 'border-temple-gold/20 hover:border-temple-gold/40'
+        isExpanded ? 'border-temple-gold shadow-gold-inner' : 'border-temple-gold/20 hover:border-temple-gold/40'
       }`}
     >
       <div className="relative">
@@ -98,7 +102,7 @@ function EventCard({
           />
         ) : (
           <div className="w-full h-40 bg-gradient-to-br from-temple-card to-temple-bg flex items-center justify-center">
-            <span className="text-5xl">🛕</span>
+            <TempleIcon className="w-16 h-16 text-temple-gold/60" />
           </div>
         )}
 
@@ -116,13 +120,13 @@ function EventCard({
       </div>
 
       <div className="p-4 space-y-3">
-        <h3 className="text-base font-bold text-temple-goldLight leading-snug">
+        <h3 className="font-display text-xl font-bold text-temple-goldLight leading-snug">
           {event.event_name}
         </h3>
 
         {event.abhishegam_time && (
-          <p className="text-xs text-temple-goldLight/70 flex items-center gap-1">
-            <span className="text-temple-gold">⏰</span> {event.abhishegam_time}
+          <p className="text-xs text-temple-goldLight/70 flex items-center gap-1.5">
+            <ClockIcon className="w-3.5 h-3.5 text-temple-gold shrink-0" /> {event.abhishegam_time}
           </p>
         )}
 
@@ -130,6 +134,23 @@ function EventCard({
           <p className="text-xs text-temple-goldLight/50 italic">
             {event.special_notes}
           </p>
+        )}
+
+        {/* Feature #2 — material sponsorship progress teaser on the card */}
+        {!isExpanded && materials.length > 0 && (
+          <div className="space-y-2 pt-0.5">
+            <span className="gold-label">{t('material_needed_title')}</span>
+            <div className="space-y-2">
+              {materials.slice(0, 3).map((m) => (
+                <MaterialProgress key={m.item_id} material={m} compact />
+              ))}
+            </div>
+            {materials.length > 3 && (
+              <p className="text-[11px] text-temple-goldLight/50">
+                +{materials.length - 3} {t('material_more')}
+              </p>
+            )}
+          </div>
         )}
 
         <button

@@ -6,6 +6,9 @@ import HeroCarousel from '@/components/HeroCarousel';
 import BulletinGrid from '@/components/BulletinGrid';
 import AdminDashboard from '@/components/AdminDashboard';
 import Footer from '@/components/Footer';
+import DevoteeStatusLookup from '@/components/DevoteeStatusLookup';
+import PwaInstallPrompt from '@/components/PwaInstallPrompt';
+import KolamDivider from '@/components/ui/KolamDivider';
 import { isEnabled } from '@/config/features';
 
 type View = 'public' | 'admin';
@@ -41,12 +44,19 @@ export default function App() {
           ) : (
             <>
               <HeroCarousel />
+              <KolamDivider className="max-w-7xl mx-auto px-4 mt-3" />
               <BulletinGrid />
+              <section className="max-w-7xl mx-auto px-4 pb-10">
+                <div className="max-w-md mx-auto">
+                  <DevoteeStatusLookup />
+                </div>
+              </section>
             </>
           )}
         </main>
 
         <Footer />
+        <PwaInstallPrompt />
       </div>
     </LanguageProvider>
   );

@@ -43,3 +43,36 @@ body {
     -moz-appearance: textfield;
   }
 }
+
+@layer components {
+  /* Consistent gold section/eyebrow label: uppercase, tracked, muted gold.
+     Plain CSS (not @apply) so it never depends on custom-utility resolution. */
+  .gold-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(229, 169, 59, 0.8);
+  }
+  /* Gentle tactile press state for 44px touch targets. */
+  .btn-press {
+    transition-property: transform, background-color, border-color, color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Honor reduced-motion: neutralize animations + transitions app-wide. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
