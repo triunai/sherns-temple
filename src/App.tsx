@@ -23,11 +23,10 @@ export default function App() {
   return (
     <LanguageProvider>
       <div className="relative min-h-screen bg-temple-bg flex flex-col">
-        {/* Temple photo backdrop — drop the image at public/temple-bg.jpg */}
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 -z-10 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: "url('/temple-bg.jpg')" }}
+          className="pointer-events-none fixed inset-0 -z-10 bg-cover bg-top opacity-[0.15]"
+          style={{ backgroundImage: "url('/Mariamman.jpg')" }}
         />
         <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-temple-bg/80 via-temple-bg/60 to-temple-bg/90" />
         <Header
