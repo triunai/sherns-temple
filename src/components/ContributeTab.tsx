@@ -21,7 +21,7 @@ type Step = 1 | 2 | 3;
 export default function ContributeTab({ event }: ContributeTabProps) {
   const { t } = useLanguage();
   const { materials } = useEventMaterials(event.event_id);
-  const { submit, submitting, error: submitError, result } = useFormSubmit();
+  const { submit, submitting, error: submitError, result, reset } = useFormSubmit();
 
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<Record<string, string>>({});
@@ -252,6 +252,34 @@ export default function ContributeTab({ event }: ContributeTabProps) {
               </p>
             </div>
           )}
+
+          <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                reset();
+                setStep(2);
+              }}
+              className="min-h-[44px] px-5 rounded-lg text-sm font-semibold border border-temple-gold/40 text-temple-goldLight hover:bg-temple-gold/10 transition-colors"
+            >
+              {t('step3_edit')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                reset();
+                setForm({});
+                setFamily([]);
+                setSponsored([]);
+                setPaymentProofUrl('');
+                setFieldErrors({});
+                setStep(1);
+              }}
+              className="min-h-[44px] px-5 rounded-lg text-sm font-bold bg-temple-gold text-black hover:bg-temple-gold/90 transition-colors"
+            >
+              {t('step3_submit_another')}
+            </button>
+          </div>
         </div>
       )}
     </div>
