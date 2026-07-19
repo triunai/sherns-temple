@@ -22,13 +22,13 @@ export default function App() {
 
   return (
     <LanguageProvider>
-      <div className="relative min-h-screen bg-temple-bg flex flex-col">
+      <div className="relative isolate min-h-screen bg-temple-bg flex flex-col">
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 -z-10 bg-cover bg-top opacity-[0.15]"
+          className="pointer-events-none fixed inset-0 -z-10 bg-cover bg-top opacity-25"
           style={{ backgroundImage: "url('/Mariamman.jpg')" }}
         />
-        <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-temple-bg/80 via-temple-bg/60 to-temple-bg/90" />
+        <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-temple-bg/70 via-temple-bg/40 to-temple-bg/90" />
         <Header
           onAdminClick={toggleAdmin}
           isAdmin={isAdmin}
