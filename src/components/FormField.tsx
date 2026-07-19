@@ -25,7 +25,7 @@ function renderDropdown(
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-3 py-2 bg-temple-bg border border-temple-gold/40 rounded text-white text-sm focus:ring-2 focus:ring-temple-gold/60 focus:border-temple-gold outline-none"
+      className="w-full min-h-[44px] px-3 py-2.5 bg-temple-bg border border-temple-gold/40 rounded-lg text-white text-base sm:text-sm focus:ring-2 focus:ring-temple-gold/60 focus:border-temple-gold outline-none"
     >
       <option value="">--</option>
       {list.map((opt) => (
@@ -58,11 +58,17 @@ export default function FormField({ field, value, onChange, error }: FormFieldPr
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder ? t(field.placeholder) : undefined}
           required={field.required}
-          className="w-full px-3 py-2 bg-temple-bg border border-temple-gold/40 rounded text-white text-sm placeholder:text-white/25 focus:ring-2 focus:ring-temple-gold/60 focus:border-temple-gold outline-none"
+          className={`w-full min-h-[44px] px-3 py-2.5 bg-temple-bg border rounded-lg text-white text-base sm:text-sm placeholder:text-white/25 focus:ring-2 focus:ring-temple-gold/60 focus:border-temple-gold outline-none ${
+            error ? 'border-red-500/70' : 'border-temple-gold/40'
+          }`}
         />
       )}
 
-      {error && <p className="text-red-400 text-xs">{error}</p>}
+      {error && (
+        <p className="text-red-400 text-xs flex items-center gap-1" role="alert">
+          <span aria-hidden="true">⚠</span> {error}
+        </p>
+      )}
     </div>
   );
 }

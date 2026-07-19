@@ -77,7 +77,7 @@ export default function HeroCarousel() {
             className="w-full flex-shrink-0 cursor-pointer"
             onClick={() => handleClick(event.event_id)}
           >
-            <div className="relative w-full h-48 sm:h-64 md:h-80 bg-temple-card">
+            <div className="relative w-full h-[280px] max-h-[45vh] sm:h-64 sm:max-h-none md:h-80 bg-temple-card">
               {event.featured_poster ? (
                 <img
                   src={event.featured_poster}
@@ -95,15 +95,26 @@ export default function HeroCarousel() {
                   )}
                 </div>
               )}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                <h3 className="text-white font-semibold text-sm sm:text-base">
+              <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-black/50 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent pt-16 px-4 pb-5 sm:px-6 sm:pb-6">
+                <h3 className="text-white font-bold text-xl leading-snug sm:text-2xl drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-2">
                   {event.event_name}
                 </h3>
-                {event.cost_per_pax > 0 && (
-                  <span className="text-temple-yellow font-bold text-xs sm:text-sm">
-                    RM {event.cost_per_pax.toFixed(2)}
-                  </span>
+                {event.abhishegam_time && (
+                  <p className="mt-1 text-temple-goldLight/90 text-sm drop-shadow">
+                    🕉️ {event.abhishegam_time}
+                  </p>
                 )}
+                <div className="mt-3 flex items-center gap-2">
+                  {event.cost_per_pax > 0 && (
+                    <span className="inline-flex items-center rounded-full bg-temple-gold/15 border border-temple-gold/40 px-3 py-1 text-temple-yellow font-semibold text-xs sm:text-sm tracking-wide backdrop-blur-sm">
+                      RM {event.cost_per_pax.toFixed(2)}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-temple-gold px-4 py-1.5 text-black font-bold text-xs sm:text-sm shadow-lg shadow-temple-gold/20">
+                    {t('register_now') === 'register_now' ? 'Register' : t('register_now')} →
+                  </span>
+                </div>
               </div>
             </div>
           </div>

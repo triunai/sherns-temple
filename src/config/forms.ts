@@ -45,7 +45,7 @@ export const CONTACT_FIELDS: FormFieldConfig[] = [
 
 export const VALIDATION_RULES: Record<string, ValidationRule> = {
   devotee_whatsapp: {
-    pattern: /^\+?[1-9]\d{1,14}$/,
+    pattern: /^(\+?[1-9]\d{6,14}|0\d{8,10})$/,
     messageKey: 'invalid_whatsapp',
   },
   devotee_email: {

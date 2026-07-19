@@ -122,13 +122,13 @@ function EventCard({
 
         <button
           onClick={onToggle}
-          className={`w-full py-2.5 rounded font-semibold text-sm transition-all ${
+          className={`w-full min-h-[44px] py-2.5 rounded-lg font-semibold text-sm transition-all ${
             isExpanded
-              ? 'bg-temple-card border border-temple-gold/50 text-temple-goldLight'
+              ? 'bg-transparent border border-temple-gold/30 text-temple-goldLight/60 hover:text-temple-goldLight hover:border-temple-gold/50'
               : 'bg-gradient-to-r from-temple-crimson to-red-800 text-white border border-temple-gold/50 hover:from-red-800 hover:to-temple-crimson'
           }`}
         >
-          {isExpanded ? t('step3_title') : t('contribute_now')}
+          {isExpanded ? t('contribute_close') : t('contribute_now')}
         </button>
 
         {isExpanded && (

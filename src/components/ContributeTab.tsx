@@ -135,7 +135,7 @@ export default function ContributeTab({ event }: ContributeTabProps) {
 
           <button
             onClick={() => setStep(2)}
-            className="w-full py-2.5 rounded font-semibold text-sm bg-gradient-to-r from-temple-crimson to-red-800 text-white border border-temple-gold/50 hover:from-red-800 hover:to-temple-crimson transition-colors"
+            className="w-full min-h-[44px] py-2.5 rounded-lg font-semibold text-sm bg-gradient-to-r from-temple-crimson to-red-800 text-white border border-temple-gold/50 hover:from-red-800 hover:to-temple-crimson transition-colors"
           >
             {t('step2_next')}
           </button>
@@ -185,10 +185,12 @@ export default function ContributeTab({ event }: ContributeTabProps) {
             />
           )}
           {fieldErrors.payment_proof && (
-            <p className="text-red-400 text-xs">{fieldErrors.payment_proof}</p>
+            <p className="text-red-400 text-xs flex items-center gap-1" role="alert">
+              <span aria-hidden="true">⚠</span> {fieldErrors.payment_proof}
+            </p>
           )}
 
-          <div className="bg-temple-bg/50 border border-temple-gold/20 rounded p-3 space-y-1 text-xs">
+          <div className="bg-temple-bg/50 border border-temple-gold/20 rounded-lg p-3 space-y-1.5 text-sm">
             <div className="flex justify-between text-temple-goldLight/70">
               <span>{t('step2_total_base')}</span>
               <span>RM {totals.baseFee.toFixed(2)}</span>
@@ -199,7 +201,7 @@ export default function ContributeTab({ event }: ContributeTabProps) {
                 <span>RM {totals.sponsorshipTotal.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between font-bold text-temple-goldLight border-t border-temple-gold/20 pt-1">
+            <div className="flex justify-between font-bold text-temple-goldLight border-t border-temple-gold/20 pt-1.5">
               <span>{t('step2_total_grand')}</span>
               <span className="text-temple-yellow">RM {totals.grandTotal.toFixed(2)}</span>
             </div>
@@ -208,13 +210,15 @@ export default function ContributeTab({ event }: ContributeTabProps) {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 rounded font-semibold text-sm bg-gradient-to-r from-temple-crimson to-red-800 text-white border border-temple-gold/50 hover:from-red-800 hover:to-temple-crimson transition-colors disabled:opacity-50"
+            className="w-full min-h-[44px] py-2.5 rounded-lg font-semibold text-sm bg-gradient-to-r from-temple-crimson to-red-800 text-white border border-temple-gold/50 hover:from-red-800 hover:to-temple-crimson transition-colors disabled:opacity-50"
           >
             {submitting ? t('form_loading') : t('step2_submit')}
           </button>
 
           {submitError && (
-            <p className="text-red-400 text-xs text-center">{submitError}</p>
+            <p className="text-red-400 text-xs text-center bg-red-950/40 border border-red-800/40 rounded-lg px-3 py-2" role="alert">
+              {submitError}
+            </p>
           )}
         </form>
       )}
@@ -234,7 +238,7 @@ export default function ContributeTab({ event }: ContributeTabProps) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 py-2.5 px-6 rounded font-semibold text-sm bg-green-600 text-white border border-green-500 hover:bg-green-700 transition-colors"
+              className="inline-flex items-center justify-center gap-2 min-h-[44px] py-2.5 px-6 rounded-lg font-semibold text-sm bg-green-600 text-white border border-green-500 hover:bg-green-700 transition-colors"
             >
               <span className="text-base">💬</span>
               {t('step3_whatsapp_btn')}
@@ -264,33 +268,57 @@ function StepIndicator({
   const { t } = useLanguage();
 
   const steps = [
-    { step: 1 as Step, labelKey: 'step1_title' },
-    { step: 2 as Step, labelKey: 'step2_title' },
-    { step: 3 as Step, labelKey: 'step3_title' },
+    { step: 1 as Step, labelKey: 'step_short_1' },
+    { step: 2 as Step, labelKey: 'step_short_2' },
+    { step: 3 as Step, labelKey: 'step_short_3' },
   ];
 
   return (
-    <div className="flex items-center gap-1">
-      {steps.map((s, idx) => (
-        <div key={s.step} className="flex items-center gap-1 flex-1">
-          <button
-            type="button"
-            onClick={() => onChange(s.step)}
-            className={`flex-1 py-1.5 rounded text-xs font-medium transition-colors ${
-              current === s.step
-                ? 'bg-temple-gold text-black'
-                : current > s.step
-                  ? 'bg-temple-gold/20 text-temple-goldLight/70'
-                  : 'bg-temple-bg/50 text-temple-goldLight/40'
-            }`}
-          >
-            {t(s.labelKey)}
-          </button>
-          {idx < steps.length - 1 && (
-            <span className="text-temple-goldLight/20 text-xs">›</span>
-          )}
-        </div>
-      ))}
+    <div className="flex items-center" aria-label="Progress">
+      {steps.map((s, idx) => {
+        const isActive = current === s.step;
+        const isDone = current > s.step;
+        return (
+          <div key={s.step} className="flex items-center flex-1 last:flex-none">
+            <button
+              type="button"
+              onClick={() => onChange(s.step)}
+              aria-current={isActive ? 'step' : undefined}
+              className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] py-1 px-1 group"
+            >
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-colors ${
+                  isActive
+                    ? 'bg-temple-gold text-black border-temple-gold shadow-[0_0_10px_rgba(229,169,59,0.4)]'
+                    : isDone
+                      ? 'bg-temple-gold/20 text-temple-goldLight border-temple-gold/40'
+                      : 'bg-temple-bg/50 text-temple-goldLight/40 border-temple-gold/15'
+                }`}
+              >
+                {isDone ? '✓' : s.step}
+              </span>
+              <span
+                className={`text-[10px] leading-none font-medium transition-colors ${
+                  isActive
+                    ? 'text-temple-gold'
+                    : isDone
+                      ? 'text-temple-goldLight/70'
+                      : 'text-temple-goldLight/40'
+                }`}
+              >
+                {t(s.labelKey)}
+              </span>
+            </button>
+            {idx < steps.length - 1 && (
+              <span
+                className={`flex-1 h-px mx-1 -mt-4 ${
+                  current > s.step ? 'bg-temple-gold/50' : 'bg-temple-gold/15'
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
