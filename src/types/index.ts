@@ -41,18 +41,18 @@ export interface DevoteeSubmission {
   created_at: string;
 }
 
-export interface FamilyMember {
+export type FamilyMember = {
   name: string;
   natchatram: string;
   rasi: string;
-}
+};
 
-export interface SponsoredItem {
+export type SponsoredItem = {
   item_id: string;
   material_name: string;
   unit_type: string;
   qty_given: number;
-}
+};
 
 export type Language = 'EN' | 'TA' | 'BM';
 
