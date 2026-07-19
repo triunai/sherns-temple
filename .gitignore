@@ -1,0 +1,34 @@
+# ── Dependencies ──────────────────────────────────────
+node_modules/
+
+# ── Environment Variables ─────────────────────────────
+# Keep .env.example committed (it's a safe template).
+# Ignore actual .env files that contain secrets.
+.env
+.env.local
+.env.*.local
+
+# ── Build Output ──────────────────────────────────────
+dist/
+build/
+
+# ── TypeScript Incremental Build Info ─────────────────
+*.tsbuildinfo
+
+# ── Logs ──────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Editor / IDE ──────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Dotenv in the Supabase CLI ───────────────────────
+supabase/.temp

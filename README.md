@@ -182,6 +182,32 @@ npm run lint
 
 ## 7. CHANGELOG
 
+### v1.2.0 — Hybrid Materials + Enhanced Admin Event Form (July 14, 2026)
+
+**Database:**
+- `supabase/migrations/005_hybrid_materials_operations.sql` — Adds `temple_inclusions` column to `events`, sets default location `3.104526, 101.730841`, makes `event_materials.event_id` and `contributions.event_id` nullable for standalone monthly operations funding, adds RLS policy for public read of standalone materials, updates trigger to safely handle NULL `event_id`
+
+**New:**
+- `src/components/MonthlyOperationsCard.tsx` — Standalone card widget displaying event_materials with NULL `event_id` as "Monthly Temple Operational Expenses & Requirements", with full contribution flow (bank details, registration form with Sankalpam + family + receipt upload, WhatsApp pending/approval)
+- `src/features/bulletin/hooks/useEventMaterials.ts` — Added `useStandaloneMaterials()` hook (React Query) for fetching standalone materials
+- `src/features/bulletin/services/eventAdminService.ts` — Added `uploadPoster(file)` for storage bucket uploads, `getStandaloneMaterials()` for admin queries
+- `src/features/bulletin/services/eventService.ts` — Added `getStandaloneMaterials()` for public queries
+
+**Changed:**
+- `src/pages/Admin.tsx` EventForm — Added `temple_inclusions` textarea, `pooja_start_time` time picker, `abhishegam_time` changed to `<input type="time">`, `event_date` changed to `<input type="date">`, `location` defaults to `3.104526, 101.730841`, poster file upload with Supabase storage integration, status as native enum selector, all new fields included in save payload
+- `src/components/BulletinGrid.tsx` — Renders `MonthlyOperationsCard` below event grid when standalone materials exist; event cards now show `description`, `event_date`, and `temple_inclusions`
+- `src/pages/AdminContributions.tsx` — Handles NULL `event_id` by displaying "Monthly Operations" as event name
+- `src/types/database.ts` — Updated to reflect nullable `event_id` on `event_materials` and `contributions`, added `temple_inclusions` to `events`
+- `src/lib/constants.ts` — Added `DEFAULT_LOCATION`
+- `src/config/db.ts` — Added `BUCKETS.EVENT_POSTERS`, `TEMPLE_DEFAULTS`
+
+**Zero impact on:**
+- Superadmin security helpers (`current_user_role`, `is_admin`, `is_superadmin`, `is_main_admin_or_higher`)
+- Existing RLS policies on `events`, `event_materials`, `contributions`, `profiles`
+- Auth flow (useAuth, useRole, RequireRole)
+
+---
+
 ### v1.1.0 — Supabase Auth Migration (July 14, 2026)
 
 **Changed (BREAKING):**
@@ -265,122 +291,85 @@ src/
 
 ## 8. WHAT THIS CODE IS ACTUALLY DOING
 
-This application is a **dual-interface temple operations portal** with two separate user flows connected by a shared Supabase database:
+This application is a **dual-interface temple operations portal** with two separate user flows connected by a shared Supabase database.
 
-### Public Devotee Flow (what a devotee sees)
+### Public Devotee Flow
 
-1. **Hero Carousel** (`HeroCarousel.tsx`): On load, queries `events` table for records where `show_in_carousel = true AND status = 'Active'`. Renders each event's `featured_poster` image in a CSS-translated horizontal slider. A `setInterval` advances one slide every 5000ms. Touch events handle mobile swipe. Clicking a poster calls `document.getElementById('event-{id}').scrollIntoView({ behavior: 'smooth' })` to jump to the matching card below.
+1. **Hero Carousel** (`HeroCarousel.tsx`): Fetches published events with `show_in_carousel = true`. Renders each event's `featured_poster` in a CSS-translated horizontal slider at 5s intervals. Clicking a poster smooth-scrolls to `#event-{id}` in the bulletin grid below.
 
-2. **Bulletin Grid** (`BulletinGrid.tsx`): Fetches all active events, maps them into `EventCard` components in a responsive CSS grid (1col / 2col / 3col). Each card has a "Contribute Now" button that toggles an `expandedId` state — only one card is expanded at a time.
+2. **Bulletin Grid** (`BulletinGrid.tsx`): Fetches published events via `usePublishedEvents()` (React Query). Renders `EventCard` components in a responsive grid. Additionally uses `useStandaloneMaterials()` to check for materials where `event_id IS NULL` — if any exist, renders a `MonthlyOperationsCard` below the event grid.
 
-3. **3-Step Contribution Wizard** (`ContributeTab.tsx`, inside each expanded card):
-   - **Step 1**: Renders bank details from `TEMPLE_CONSTANTS` (Maybank, Kumarah Muniandy, 114133128547) and displays the QR code image at `/assets/images/maybank-duitnow-qr.png`.
-   - **Step 2**: Renders the registration form. Contact fields (`CONTACT_FIELDS` config) drive the `FormField` component, which renders text/tel/email inputs or dropdowns depending on the field type. `SankalpamForm` manages a dynamic array of family members via React state. `MaterialSponsorship` fetches live `event_materials` rows and renders each with a progress bar — inputs auto-disable when `funding_status = 'Filled'`. `PaymentProofUpload` sends the selected image file to `db.storage.uploadPaymentProof()`, which uses `supabase.storage.from('payment-proofs').upload()`. On submit, `useFormSubmit.send()` calls `db.submissions.create()` which inserts into `devotee_submissions` with `admin_approval = 'Pending'`.
-   - **Step 3**: Shows the receipt ID and a PENDING status message. If the submission's `admin_approval` is `'Approved'`, a green WhatsApp deep-link button appears. The link is built by `buildWhatsAppMessage()` in `config/whatsapp.ts` which formats the devotee's name, Natchatram, Rasi, family members, sponsored items, and payment amount into a pre-filled WhatsApp URL template (`wa.me/60172776889?text=...`).
+3. **Event Cards** (`EventCard` inline in `BulletinGrid.tsx`): Shows poster thumbnail, title, description, date, abhishegam time, temple inclusions, cost badge. Each has a "Contribute Now" button that expands `ContributeTab` — the 3-step contribution wizard (payment details → registration form with Sankalpam + material sponsorship + receipt upload → pending/approved status with WhatsApp link).
 
-4. **Language Toggle** (`Header.tsx`): The `LanguageProvider` wraps the entire app. When EN/TA/BM is selected, `setLanguage()` updates context, and every component calling `t(key)` gets the translated string from the matching dictionary object in `languageContext.tsx`.
+4. **Monthly Operations Card** (`MonthlyOperationsCard.tsx`): A standalone full-width card showing materials with NULL `event_id` — progress bars for each standalone requirement (utilities, upkeep) with "Contribute Now" that expands the same full 3-step contribution flow submitting to `contributions` with `event_id: null`.
 
-### Admin Flow — Supabase Auth (what the temple manager sees)
+5. **Language Toggle** (`Header.tsx`): React Context-based translation provider with EN/Tamil/BM dictionaries.
 
-1. **Auth Session** (`useAuth` hook in `src/hooks/useAuth.ts`): On mount, calls `supabase.auth.getSession()` to restore any existing session (persisted via Supabase's built-in JWT storage/cookie). Subscribes to `supabase.auth.onAuthStateChange` to react to login/logout events in real time. Exposes `session`, `user`, `profile`, `isApproved`, `login()`, `register()`, `logout()`, `forgotPassword()`, `updateEmail()`, `updatePassword()`.
+### Admin Flow
 
-2. **Login/Register UI** (`AdminLoginView.tsx`): Pill-tab component with two states:
-   - **Login tab**: Email input + password input (with eye-icon visibility toggle) + "Forgot Password?" text trigger calling `supabase.auth.resetPasswordForEmail()`. Errors map from Supabase error codes (e.g., `invalid_credentials`) to localized strings via `AUTH_ERROR_MAP` in `config/admin.ts`.
-   - **Register tab**: Email + password + confirm password (both with visibility toggles). Calls `supabase.auth.signUp()`, which creates the user in `auth.users` and the database trigger `handle_new_admin_user()` inserts a row into `admin_profiles` with `is_approved = false`.
+1. **Auth** (`src/features/auth/`): `useAuth` hook + `authService` with `signInWithPassword`, `signUp`, `signOut`, `resetPasswordForEmail`. `useRole` hook exposes `role`, `canPublish`, `isSuperadmin`. Routes protected by `RequireRole` component.
 
-3. **Approval Gating** (`AdminDashboard.tsx`): After login, the `useAuth` hook fetches the user's `admin_profiles` row. Three possible states:
-   - **Not logged in** → renders `AdminLoginView`
-   - **Logged in but `is_approved = false`** → renders a "Pending Admin Approval" screen with a message to wait
-   - **Logged in and approved** → renders the full dashboard with tab navigation
+2. **Admin Hub** (`Admin.tsx`): Dashboard tab (event statistics) + Listings tab (search/filter/edit/delete events). Inline `EventForm` for create/edit with: title, description, date picker, time pickers (abhishegam/pooja), location (default `3.104526, 101.730841`), temple inclusions, cost per pax, status (draft/published/archived), carousel toggle, featured toggle, poster URL + **file upload** (uploads to `event-posters` storage bucket via `uploadPoster()`).
 
-4. **Submissions Table** (`SubmissionsTable.tsx`): `useSubmissions()` calls `db.submissions.getAll()` to fetch all `devotee_submissions` rows. Each row displays the event name (joined from the events array), devotee details, amount, receipt link, and an approval-status dropdown. When status changes, `db.submissions.updateApproval()` runs an `UPDATE` on the row. The PostgreSQL trigger `process_material_contributions()` fires on `AFTER UPDATE` — it iterates `sponsored_items` JSONB and increments `event_materials.qty_received`. A "WA" button copies a pre-formatted WhatsApp deep-link to the clipboard.
+3. **Contribution Approvals** (`AdminContributions.tsx`): Table of all `contributions` rows with approve/reject/reset toggles. WhatsApp copy button. Superadmin can delete. NULL `event_id` displays as "Monthly Operations".
 
-5. **Admin Management** (`AdminManagementTable.tsx`): Lists all `admin_profiles` (except the current user). The superadmin (`role = 'superadmin'`) can toggle `is_approved` for any other admin via `db.admin.updateApproval()`. RLS restricts this to approved admins only.
+4. **Role-based security**: Admin APIs check `current_user_role()` via PostgreSQL security definer functions. RLS policies control read/write access per role level.
 
-6. **Account Settings** (`AccountSettings.tsx`): Two forms:
-   - **Update Email**: Calls `supabase.auth.updateUser({ email })` with the new email.
-   - **Change Password**: Validates confirmation match, then calls `supabase.auth.updateUser({ password })`.
+### Hybrid Materials System
 
-### The `admin_profiles` DB Schema
+The `event_materials` table now supports two modes:
+- **Event-linked** (`event_id` IS NOT NULL): Materials tied to a specific prayer/event. Displayed inside that event card's ContributeTab.
+- **Standalone** (`event_id` IS NULL): Materials for monthly operational expenses (utilities, upkeep). Displayed in the dedicated `MonthlyOperationsCard` widget.
 
-```sql
-create table public.admin_profiles (
-    user_id uuid references auth.users(id) primary key,
-    email text not null,
-    is_approved boolean default false,
-    role text check (role in ('superadmin', 'admin')),
-    created_at timestamptz default now()
-);
-```
-
-- A PostgreSQL trigger `handle_new_admin_user()` fires on `INSERT INTO auth.users` and auto-creates a profile row with `is_approved = false`.
-- RLS: any authenticated user can read their own profile (needed for approval gating). Only approved admins can list all profiles or update them.
-- The seed `codeshern@gmail.com` user must be created via Supabase Dashboard → Authentication → Users, then manually set to `is_approved = true, role = 'superadmin'` in the `admin_profiles` table.
-
-### Shared Infrastructure
-
-- **`src/lib/db.ts`**: Every Supabase query lives here. Components never call `supabase.from()` directly. If a table name changes, you fix one file.
-- **`src/config/features.ts`**: 8 boolean flags. Toggle any subsystem (carousel, 3D, sponsorship, family, upload, admin) without touching components.
-- **`src/config/forms.ts`**: Form fields are defined as data objects. Adding a new field to the registration form requires only adding one entry to `CONTACT_FIELDS` and one translation key per language.
-- **`src/config/admin.ts`**: Maps Supabase Auth error codes to translation keys via `AUTH_ERROR_MAP`. The `mapAuthError()` function in this file is used by `useAuth.ts` to convert Supabase's raw error messages into localized user-facing strings.
+Both use the same `contributions` table for submissions, with `event_id` nullable.
 
 ---
 
 ## 9. WHAT COULD BREAK HERE AND WHY
 
-### 9.1 Supabase Auth Not Configured (MOST LIKELY)
-**Symptom:** Admin login/register does nothing, or Supabase returns `AuthApiError`.
-**Root cause:** The `.env` file is missing `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY`. The `supabaseClient.ts` initializes with placeholder values, and all auth calls fail.
-**Fix:** Create `.env` from `.env.example` with real Supabase project credentials. Restart the dev server.
+### 9.1 Supabase Not Configured
+**Symptom:** Entire site shows empty states. Admin login does nothing.
+**Root cause:** `.env` missing `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY`. The Supabase client throws on construction (see `src/lib/supabase.ts` lines 7-8).
+**Fix:** Copy `.env.example` → `.env` with real Supabase credentials. Restart dev server.
 
-### 9.2 Database Schema Not Deployed (Migration 002)
-**Symptom:** Admin Dashboard shows "Pending Approval" but never transitions to the approved state, or the admin management table is empty.
-**Root cause:** The `002_admin_profiles.sql` migration has not been run. The trigger `handle_new_admin_user()` does not exist, so new registrations don't create `admin_profiles` rows. Or the RLS policies on `devotee_submissions` still use the old `auth.role() = 'authenticated'` check.
-**Fix:** Run `002_admin_profiles.sql` in the Supabase SQL Editor after running `001_initial_schema.sql`.
+### 9.2 Database Migrations Not Deployed (003→005)
+**Symptom:** Admin login fails with RLS errors on `profiles` table, or MonthlyOperationsCard doesn't appear.
+**Root cause:** Migrations 003 (`profiles`, rebuilt `events`/`contributions`/`event_materials`), 004 (bootstrap superadmin), and 005 (hybrid materials) were never run. The old `admin_profiles` and `devotee_submissions` tables don't exist, while the new schema expects `profiles` and `contributions`.
+**Fix:** Run all migrations in order: `001`, `002`, `003`, `004`, `005` in Supabase SQL Editor.
 
-### 9.3 Initial Admin Not Created/Approved
-**Symptom:** Cannot log into admin dashboard. Or logs in but sees only the "Pending Approval" screen.
-**Root cause:** The initial admin `codeshern@gmail.com` must be created in Supabase Auth AND then approved in the `admin_profiles` table. The trigger creates the profile automatically when the user signs up, but `is_approved` defaults to `false`.
-**Fix:** 
-1. Create the user: Supabase Dashboard → Authentication → Users → Add User → Email: `codeshern@gmail.com`, Password: `Pechiamman1`, check "Auto Confirm User".
-2. Approve the profile: run `UPDATE public.admin_profiles SET is_approved = true, role = 'superadmin' WHERE email = 'codeshern@gmail.com';`
+### 9.3 Migration 005 Not Applied
+**Symptom:** MonthlyOperationsCard doesn't render, even though standalone materials exist in the DB. Or admin form save fails when setting `temple_inclusions`.
+**Root cause:** Migration 005 (`ALTER TABLE ... ADD COLUMN ...`) was not run. The `events` table lacks the `temple_inclusions` column, and `event_materials.event_id` is still NOT NULL.
+**Fix:** Run `005_hybrid_materials_operations.sql` in Supabase SQL Editor.
 
-### 9.4 Email Confirmation Required but Not Configured
-**Symptom:** When logging in, Supabase returns `Email not confirmed`. The login fails.
-**Root cause:** Supabase Auth is configured to require email confirmation (default). New users must click a confirmation link before they can log in. The seed admin must have `email_confirmed_at` set.
-**Fix (option 1):** When creating the seed user in Supabase Dashboard, check "Auto Confirm User" (sets `email_confirmed_at = now()`).
-**Fix (option 2):** Disable email confirmation in Supabase Dashboard → Authentication → Settings → "Make users confirm their email" = OFF (less secure, but simpler for testing).
-**Fix (option 3):** Configure SMTP in Supabase Dashboard → Authentication → Settings → SMTP Provider to actually send confirmation emails.
+### 9.4 Storage Bucket `event-posters` Not Created
+**Symptom:** Poster upload in the admin form fails with 404 error.
+**Root cause:** `uploadPoster()` in `eventAdminService.ts` calls `supabase.storage.from('event-posters').upload()`. If the bucket doesn't exist, Supabase returns a 404.
+**Fix:** Create the bucket in Supabase Dashboard → Storage → New Bucket → name: `event-posters`, public: ON.
 
-### 9.5 RLS on admin_profiles Blocks Self-Read
-**Symptom:** After login, the user is stuck on loading and never sees the pending approval screen.
-**Root cause:** The RLS policy `"Users can read own admin profile"` might not exist or is misconfigured. Without it, the `db.admin.getProfile()` call throws a 403 error.
-**Fix:** Ensure the policy is in `002_admin_profiles.sql` and has been applied: `create policy "Users can read own admin profile" on public.admin_profiles for select using (user_id = auth.uid());`
+### 9.5 Initial Admin Not Created/Approved
+**Symptom:** Cannot log into admin dashboard, or logged in but sees "Pending Approval" screen.
+**Root cause:** Migration 004 wiped all users and sets first sign-up as superadmin. If no user exists in `auth.users` or the `profiles` table has no approved admin, login fails.
+**Fix:** Use the Register tab to sign up `codeshern@gmail.com` / `Pechiamman1` (first user gets superadmin via migration 004 trigger). Or create via Supabase Dashboard → Auth → Users.
 
-### 9.6 Admin Management Table Fails for Non-Superadmin
-**Symptom:** Admin Management tab shows "No other admins registered" or loading spinner.
-**Root cause:** `db.admin.getAllProfiles()` requires an approved admin. If the current user's `is_approved` is false or the RLS policy blocks their read, the query returns nothing.
-**Fix:** Ensure the approved status is set correctly. The superadmin should be the only one who can toggle others.
+### 9.6 ContributeTab Uses Old Type Names
+**Symptom:** TypeScript error in `ContributeTab.tsx` referencing `event.event_id` (old column name) vs `event.id` (current name).
+**Root cause:** The codebase was restructured in migration 003 (events renamed `event_id` → `id`). If `ContributeTab.tsx` references the old column name, TypeScript catches it. Both `BulletinGrid.tsx` and `ContributeTab.tsx` now use `event.id` correctly.
+**Fix:** Verified — all event references use `event.id`.
 
-### 9.7 Account Settings Update Fails
-**Symptom:** Changing email or password returns an error.
-**Root cause:** `supabase.auth.updateUser()` requires a recent login session and a confirmed email. If the session is too old or the email isn't confirmed, Supabase may reject the update.
-**Fix:** Re-login before updating credentials. If updating email, Supabase sends a confirmation to the new email — the user must click it before the change takes effect.
+### 9.7 MonthlyOperationsCard Shows "Submitted" for Null Events
+**Symptom:** After submitting to MonthlyOperationsCard, the WA link generation may fail if the submission has no event_id.
+**Root cause:** `buildWhatsAppMessage()` in `config/whatsapp.ts` expects an `Event` object to build the message. For standalone contributions, there's no event to reference.
+**Fix:** MonthlyOperationsCard currently shows a simple pending confirmation without WhatsApp link generation (as of v1.2.0). The WA link for standalone contributions will be added in a future iteration.
 
-### 9.8 Forgot Password Requires SMTP
-**Symptom:** "Forgot Password?" says a reset link was sent, but the email never arrives.
-**Root cause:** `supabase.auth.resetPasswordForEmail()` requires Supabase to be able to send emails. Without SMTP configuration in the Supabase project, the email is never sent.
-**Fix:** Configure SMTP in Supabase Dashboard → Authentication → Settings → SMTP Provider. Or use a third-party email service (SendGrid, Resend, etc.).
+### 9.8 AdminContributions Shows "Monthly Operations" for Null Events
+**Symptom:** In the admin contributions table, some rows show "Monthly Operations" instead of an event name.
+**Root cause:** This is intentional behavior. `getEventName()` returns `'Monthly Operations'` when `event_id` is `null/undefined`. No fix needed.
 
-### 9.9 Supabase Project Has Email Confirmations Disabled
-**Symptom:** Registration returns success but the user still can't log in.
-**Root cause:** If email confirmations are disabled (a project setting), `supabase.auth.signUp()` creates the user with `email_confirmed_at` already set. The registration flow should then immediately allow login. However, if the "Auto Confirm User" setting in the project is OFF, the sign up creates an unconfirmed user.
-**Fix:** Check the Supabase Authentication → Settings → "Make users confirm their email" toggle. For development, disabling this simplifies the flow. For production, configure SMTP.
-
-### 9.10 Database Trigger for admin_profiles Fails on Signup
-**Symptom:** After signing up via the Register tab, the `admin_profiles` table has no row for the new user.
-**Root cause:** The trigger `handle_new_admin_user()` might not exist or might have been created with insufficient privileges (needs `security definer` to write to `admin_profiles` from `auth.users` trigger).
-**Fix:** Verify the trigger exists: `SELECT * FROM information_schema.triggers WHERE trigger_name = 'on_admin_user_created';`. Re-run the trigger creation block from `002_admin_profiles.sql`.
+### 9.9 Poster File Upload Hangs
+**Symptom:** Clicking Upload in the admin form does nothing, or the button stays in "uploading" state forever.
+**Root cause:** The `event-posters` bucket might not be public, so the upload succeeds but the `getPublicUrl()` call returns an inaccessible URL. Or the file is too large (Supabase default limit is 1MB for free tier).
+**Fix:** Set the bucket to public. Increase file size limit in Supabase Dashboard → Storage → `event-posters` → Configuration.
 
 ---
 
@@ -390,9 +379,33 @@ create table public.admin_profiles (
 
 | # | Dependency | Status | Action |
 |---|---|---|---|
-| 1 | **Supabase project** | Not created | Go to [supabase.com](https://supabase.com), create a new project, note the URL and anon key |
-| 2 | **`.env` file** | Not created (only `.env.example` exists) | Copy `.env.example` → `.env`, fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` |
-| 3 | **Database migrations** | Not deployed | Run `001_initial_schema.sql` AND `002_admin_profiles.sql` in Supabase SQL Editor (in order) |
+| 1 | **Supabase project** | Not created | Go to [supabase.com](https://supabase.com), create a new project |
+| 2 | **`.env` file** | Not created | Copy `.env.example` → `.env`, add `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` |
+| 3 | **All migrations** (001–005) | Not deployed | Run all 5 `.sql` files in order in Supabase SQL Editor |
+| 4 | **`payment-proofs` storage bucket** | Not created | Create in Supabase Dashboard → Storage → New Bucket → `payment-proofs`, public |
+| 5 | **`event-posters` storage bucket** | Not created | Create in Supabase Dashboard → Storage → New Bucket → `event-posters`, public |
+| 6 | **Seed data** | Not inserted | Insert at least 1 published event + 2-3 `event_materials` rows |
+| 7 | **Initial admin user** | Not created | Use the Register tab to sign up as `codeshern@gmail.com` (first user = superadmin) |
+| 8 | **Node.js + npm** | Check installed | `node --version` (needs 18+) |
+| 9 | **QR code image** | Not placed | Put DuitNow QR PNG at `public/assets/images/maybank-duitnow-qr.png` |
+
+### SHOULD SET UP (production readiness)
+
+| # | Dependency | Status | Action |
+|---|---|---|---|
+| 10 | **Supabase SMTP provider** | Not configured | Storage Dashboard → Auth → Settings → SMTP Provider (for Forgot Password + email confirm) |
+| 11 | **Email confirmation setting** | Toggle as needed | Auth → Settings → "Make users confirm their email" — OFF for testing, ON for production with SMTP |
+| 12 | **Custom domain** | Not configured | Deploy to Vercel/Netlify with proper domain for HTTPS |
+| 13 | **Edge Functions for email** | Not implemented | Trigger email notifications on contribution submit/approval via Supabase Edge Functions |
+
+### NICE TO HAVE
+
+| # | Dependency | Status |
+|---|---|---|
+| 14 | Supabase type regeneration | Not run (`npx supabase gen types typescript --linked > src/types/database.ts`) |
+| 15 | Analytics (GA / Plausible) | Not added |
+| 16 | Error monitoring (Sentry) | Not added |
+| 17 | E2E tests | Not written |
 | 4 | **`payment-proofs` storage bucket** | Not created | Create in Supabase Dashboard → Storage → New Bucket → name: `payment-proofs`, public: ON |
 | 5 | **QR code image** | Not placed | Put the DuitNow QR PNG at `public/assets/images/maybank-duitnow-qr.png` |
 | 6 | **Seed data** | Not inserted | Insert 1+ Active event + 2-3 `event_materials` rows via Supabase SQL Editor or Dashboard |
